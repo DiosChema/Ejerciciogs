@@ -4,10 +4,12 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.ejercicio.Apis.PeliculasApi
 import com.example.ejercicio.Objects.Peliculas
 import com.example.ejercicio.Objects.Urls
 import com.example.ejercicio.R
@@ -17,7 +19,7 @@ import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PeliculasApi.PeliculasCallback {
 
     var listaTmp:MutableList<Peliculas> = ArrayList()
     lateinit var mViewEmpleados : RecyclerViewPeliculas
@@ -27,59 +29,15 @@ class MainActivity : AppCompatActivity() {
     lateinit var activity: Activity
     var pagina = 0;
     var limite = false;
+    lateinit var peliculasApi : PeliculasApi
+    lateinit var progressDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        context = this
-        activity = this
-
-        crearRecyclerView()
+        inicializarVariables()
         obtenerUltimasPeliculas(++pagina)
-    }
-
-    fun obtenerUltimasPeliculas(pagina:Int){
-        val urls = Urls()
-        val url = urls.url+urls.lastMovies+urls.api+urls.pagina+pagina
-        val request = Request.Builder()
-            .url(url)
-            .get()
-            .build()
-        val client = OkHttpClient()
-        val progressDialog = ProgressDialog(this)
-        progressDialog.setMessage(getString(R.string.mensaje_espera))
-        progressDialog.setCancelable(false)
-        progressDialog.show()
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                progressDialog.dismiss()
-                runOnUiThread{ Toast.makeText(context, context.getString(R.string.mensaje_error), Toast.LENGTH_LONG).show() }
-            }
-            override fun onResponse(call: Call, response: Response)
-            {
-                val body = response.body()?.string()
-                if(body != null && body.isNotEmpty()) {
-                    try
-                    {
-                        val gson = GsonBuilder().create()
-                        val model = gson.fromJson(body, PeliculasResponse::class.java)
-
-                        if(pagina >= model.total_pages) limite = true;
-
-                        runOnUiThread {
-                            listaTmp.addAll(model.results.toMutableList())
-                            mViewEmpleados.RecyclerAdapter(listaTmp, context)
-                            mViewEmpleados.notifyDataSetChanged()
-                        }
-                    }
-                    catch(e:Exception)
-                    {
-                    }
-                }
-                progressDialog.dismiss()
-            }
-        })
     }
 
     fun crearRecyclerView(){
@@ -90,14 +48,50 @@ class MainActivity : AppCompatActivity() {
         mViewEmpleados.RecyclerAdapter(listaTmp, this)
         mRecyclerView.adapter = mViewEmpleados
 
-
+        //Cargar mas peliculas al llegar al fondo
         mRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    if(!limite) obtenerUltimasPeliculas(++pagina)
+                    if(!limite)
+                        obtenerUltimasPeliculas(++pagina)
                 }
             }
         })
+    }
+
+    fun inicializarVariables()
+    {
+        progressDialog = ProgressDialog(this)
+        progressDialog.setMessage(getString(R.string.mensaje_espera))
+        progressDialog.setCancelable(false)
+
+        peliculasApi = PeliculasApi()
+        peliculasApi.context = this
+        crearRecyclerView()
+    }
+
+    fun obtenerUltimasPeliculas(pagina:Int)
+    {
+        progressDialog.show()
+        peliculasApi.obtenerUltimasPeliculas(pagina)
+    }
+
+
+    override fun onSuccessResponse(result: PeliculasResponse)
+    {
+        if(pagina >= result.total_pages) limite = true;
+        runOnUiThread {
+            listaTmp.addAll(result.results.toMutableList())
+            mViewEmpleados.RecyclerAdapter(listaTmp, this)
+            mViewEmpleados.notifyDataSetChanged()
+        }
+        progressDialog.dismiss()
+    }
+
+    override fun onFailureResponse()
+    {
+        runOnUiThread{ Toast.makeText(context, context.getString(R.string.mensaje_error), Toast.LENGTH_LONG).show() }
+        progressDialog.dismiss()
     }
 }
