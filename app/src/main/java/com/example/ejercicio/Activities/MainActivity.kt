@@ -3,9 +3,9 @@ package com.example.ejercicio.Activities
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ejercicio.Objects.Peliculas
@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
     //lateinit var globalVariable: GlobalClass
     lateinit var context : Context
     lateinit var activity: Activity
+    var pagina = 0;
+    var limite = false;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,12 +36,12 @@ class MainActivity : AppCompatActivity() {
         activity = this
 
         crearRecyclerView()
-        obtenerPeliculas()
+        obtenerUltimasPeliculas(++pagina)
     }
 
-    fun obtenerPeliculas(){
+    fun obtenerUltimasPeliculas(pagina:Int){
         val urls = Urls()
-        val url = urls.url+urls.lastMovies+urls.api
+        val url = urls.url+urls.lastMovies+urls.api+urls.pagina+pagina
         val request = Request.Builder()
             .url(url)
             .get()
@@ -52,10 +54,7 @@ class MainActivity : AppCompatActivity() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 progressDialog.dismiss()
-                runOnUiThread()
-                {
-                    Toast.makeText(context, context.getString(R.string.mensaje_error), Toast.LENGTH_LONG).show()
-                }
+                runOnUiThread{ Toast.makeText(context, context.getString(R.string.mensaje_error), Toast.LENGTH_LONG).show() }
             }
             override fun onResponse(call: Call, response: Response)
             {
@@ -65,8 +64,12 @@ class MainActivity : AppCompatActivity() {
                     {
                         val gson = GsonBuilder().create()
                         val model = gson.fromJson(body, PeliculasResponse::class.java)
+
+                        if(pagina >= model.total_pages) limite = true;
+
                         runOnUiThread {
-                            mViewEmpleados.RecyclerAdapter(model.results.toMutableList(), context)
+                            listaTmp.addAll(model.results.toMutableList())
+                            mViewEmpleados.RecyclerAdapter(listaTmp, context)
                             mViewEmpleados.notifyDataSetChanged()
                         }
                     }
@@ -86,5 +89,15 @@ class MainActivity : AppCompatActivity() {
         mRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL ,false)
         mViewEmpleados.RecyclerAdapter(listaTmp, this)
         mRecyclerView.adapter = mViewEmpleados
+
+
+        mRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    if(!limite) obtenerUltimasPeliculas(++pagina)
+                }
+            }
+        })
     }
 }

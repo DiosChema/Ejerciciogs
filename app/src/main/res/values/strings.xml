@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Ejercicio</string>
-    <string name="mensaje_espera">Cargando imagenes</string>
+    <string name="mensaje_espera">Cargando peliculas</string>
     <string name="mensaje_error">Ocurrio un error, favor de intentar despues</string>
 </resources>

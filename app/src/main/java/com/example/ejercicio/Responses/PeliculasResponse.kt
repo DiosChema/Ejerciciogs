@@ -5,5 +5,6 @@ import java.io.Serializable
 
 data class PeliculasResponse(
     var results:List<Peliculas>,
-    var page:Int
+    var page:Int,
+    var total_pages:Int
 ): Serializable
