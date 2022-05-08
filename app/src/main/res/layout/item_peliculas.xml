@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -20,7 +19,7 @@
 
         <ImageView
             android:id="@+id/itemPeliculas_imagen"
-            android:layout_width="80dp"
+            android:layout_width="60dp"
             android:layout_height="80dp"
             android:src="@android:drawable/ic_menu_camera"
             android:layout_marginStart="8dp"
@@ -65,7 +64,6 @@
                         android:textSize="14sp"
                         android:maxLines="2"
                         tools:text= "dadawdawdwd"
-                        android:layout_marginLeft="4dp"
                         android:layout_marginStart="4dp"/>
 
                 </LinearLayout>
@@ -83,7 +81,7 @@
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:maxLines="1"
-                        tools:text= "Cantidad"/>
+                        tools:text= ""/>
 
                     <TextView
                         android:id="@+id/itemPeliculas_popularidad"
@@ -93,7 +91,7 @@
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:maxLines="1"
-                        tools:text = "$$$"
+                        tools:text = ""
                         android:drawablePadding="3dp"/>
 
                 </LinearLayout>

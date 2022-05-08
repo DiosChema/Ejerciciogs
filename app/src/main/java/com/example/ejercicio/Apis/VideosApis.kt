@@ -2,28 +2,21 @@ package com.example.ejercicio.Apis
 
 import android.content.Context
 import com.example.ejercicio.Objects.Urls
-import com.example.ejercicio.Responses.PeliculasResponse
+import com.example.ejercicio.Responses.VideoResponse
 import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
 
-class PeliculasApi {
+class VideosApis {
 
     lateinit var context: Context
 
-    fun obtenerPeliculas(pagina:Int, tipoPelicula:Int){
+    fun obtenerLinkVideo(peliculaId:Int){
 
-        val peliculasInterface = context as PeliculasCallback
+        val peliculasInterface = context as VideosCallback
         val urls = Urls()
 
-        val tipoPeliculaApi = when(tipoPelicula)
-        {
-            1 -> urls.popular
-            2 -> urls.nowPlaying
-            else -> ""
-        }
-
-        val url = urls.url+tipoPeliculaApi+urls.api+urls.pagina+pagina
+        val url = urls.url+urls.movie+peliculaId+urls.video+urls.api
         val request = Request.Builder()
             .url(url)
             .get()
@@ -31,7 +24,7 @@ class PeliculasApi {
         val client = OkHttpClient()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                peliculasInterface.onFailurePeliculasResponse()
+                peliculasInterface.onFailureVideoResponse()
             }
             override fun onResponse(call: Call, response: Response)
             {
@@ -40,9 +33,9 @@ class PeliculasApi {
                     try
                     {
                         val gson = GsonBuilder().create()
-                        val model = gson.fromJson(body, PeliculasResponse::class.java)
+                        val model = gson.fromJson(body, VideoResponse::class.java)
 
-                        peliculasInterface.onSuccessPeliculasResponse(model)
+                        peliculasInterface.onSuccessVideoResponse(model)
                     }
                     catch(e:Exception)
                     {
@@ -52,8 +45,8 @@ class PeliculasApi {
         })
     }
 
-    interface PeliculasCallback {
-        fun onSuccessPeliculasResponse(result: PeliculasResponse)
-        fun onFailurePeliculasResponse()
+    interface VideosCallback {
+        fun onSuccessVideoResponse(result: VideoResponse)
+        fun onFailureVideoResponse()
     }
 }

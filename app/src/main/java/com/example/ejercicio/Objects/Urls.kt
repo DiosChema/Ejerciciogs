@@ -6,7 +6,9 @@ data class Urls(
     var nowPlaying:String,
     var popular:String,
     var api:String,
-    val pagina: String
+    val pagina: String,
+    val movie: String,
+    val video: String
 )
 {
 
@@ -17,6 +19,8 @@ data class Urls(
         "/movie/now_playing?",
         "/movie/popular?",
         "api_key=7b63a641c032019f4bd1faa4e073ed75",
-        "&page="
+        "&page=",
+        "/movie/",
+        "/videos?"
     )
 }

@@ -52,6 +52,7 @@ class RecyclerViewPeliculas : RecyclerView.Adapter<RecyclerViewPeliculas.ViewHol
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val urls = Urls()
+        val pelicula = view.context as Pelicula
         val imagen = view.findViewById(R.id.itemPeliculas_imagen) as ImageView
 
         val titulo = view.findViewById(R.id.itemPeliculas_titulo) as TextView
@@ -59,19 +60,29 @@ class RecyclerViewPeliculas : RecyclerView.Adapter<RecyclerViewPeliculas.ViewHol
         val lenguaje = view.findViewById(R.id.itemPeliculas_lenguaje) as TextView
         val popularidad = view.findViewById(R.id.itemPeliculas_popularidad) as TextView
 
-        fun bind(articulo: Peliculas) {
+        fun bind(pelicula: Peliculas) {
 
-            titulo.text = articulo.title
-            descripcion.text = articulo.overview
-            lenguaje.text = articulo.release_date
-            popularidad.text = articulo.popularity
+            titulo.text = pelicula.title
+            descripcion.text = pelicula.overview
+            lenguaje.text = pelicula.release_date
+            popularidad.text = "Likes " + pelicula.popularity
 
-            imagen.loadUrl(urls.imagen+articulo.poster_path)
+            imagen.loadUrl(urls.imagen+pelicula.poster_path)
+
+            itemView.setOnClickListener()
+            {
+                this.pelicula.peliculaId(pelicula.id)
+            }
         }
 
         fun ImageView.loadUrl(url: String) {
             try {Picasso.with(context).load(url).into(this)}
             catch(e: Exception){}
         }
+
+
+    }
+    interface Pelicula {
+        fun peliculaId(id:Int)
     }
 }

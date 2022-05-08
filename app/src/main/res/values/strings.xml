@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">Ejercicio</string>
-    <string name="mensaje_espera">Cargando peliculas</string>
-    <string name="mensaje_error_generico">Ocurrio un error, favor de intentar despues</string>
-    <string name="mensaje_error_internet">Ocurrio un error al intentar conectar con el servidor, favor de intentar despues</string>
+    <string name="mensaje_espera">Espere un momento</string>
+    <string name="mensaje_error_generico">Ocurrió un error, favor de intentar mas tarde</string>
+    <string name="mensaje_error_internet">Ocurrió un error al intentar conectar con el servidor, favor de intentar mas tarde</string>
     <string name="peliculas_mas_popular">Mas popular</string>
     <string name="peliculas_cartelera">En cartelera</string>
+    <string name="api_youtube">AIzaSyD9M8AX6_er_oP9SdlfpTUO_yLl_CjzOlA</string>
+
 </resources>
