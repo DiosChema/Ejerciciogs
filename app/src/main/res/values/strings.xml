@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Ejercicio</string>
     <string name="mensaje_espera">Cargando peliculas</string>
-    <string name="mensaje_error">Ocurrio un error, favor de intentar despues</string>
+    <string name="mensaje_error_generico">Ocurrio un error, favor de intentar despues</string>
+    <string name="mensaje_error_internet">Ocurrio un error al intentar conectar con el servidor, favor de intentar despues</string>
+    <string name="peliculas_mas_popular">Mas popular</string>
+    <string name="peliculas_cartelera">En cartelera</string>
 </resources>

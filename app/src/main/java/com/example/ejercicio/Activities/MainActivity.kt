@@ -1,35 +1,30 @@
 package com.example.ejercicio.Activities
 
-import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ejercicio.Apis.PeliculasApi
 import com.example.ejercicio.Objects.Peliculas
-import com.example.ejercicio.Objects.Urls
 import com.example.ejercicio.R
 import com.example.ejercicio.RecyclerView.RecyclerViewPeliculas
 import com.example.ejercicio.Responses.PeliculasResponse
-import com.google.gson.GsonBuilder
-import okhttp3.*
-import java.io.IOException
+
 
 class MainActivity : AppCompatActivity(), PeliculasApi.PeliculasCallback {
 
-    var listaTmp:MutableList<Peliculas> = ArrayList()
-    lateinit var mViewEmpleados : RecyclerViewPeliculas
-    lateinit var mRecyclerView : RecyclerView
-    //lateinit var globalVariable: GlobalClass
+    private var listaPeliculas:MutableList<Peliculas> = ArrayList()
+    private lateinit var mViewEmpleados : RecyclerViewPeliculas
+    private lateinit var mRecyclerView : RecyclerView
     lateinit var context : Context
-    lateinit var activity: Activity
     var pagina = 0;
+    private var tipoBusqueda = 1;
     var limite = false;
-    lateinit var peliculasApi : PeliculasApi
+    private lateinit var peliculasApi : PeliculasApi
     lateinit var progressDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,15 +32,15 @@ class MainActivity : AppCompatActivity(), PeliculasApi.PeliculasCallback {
         setContentView(R.layout.activity_main)
 
         inicializarVariables()
-        obtenerUltimasPeliculas(++pagina)
+        obtenerPeliculas(++pagina)
     }
 
-    fun crearRecyclerView(){
+    fun asignarControles(){
         mViewEmpleados = RecyclerViewPeliculas()
         mRecyclerView = findViewById(R.id.mainPeliculas)
         mRecyclerView.setHasFixedSize(true)
         mRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL ,false)
-        mViewEmpleados.RecyclerAdapter(listaTmp, this)
+        mViewEmpleados.RecyclerAdapter(listaPeliculas, this)
         mRecyclerView.adapter = mViewEmpleados
 
         //Cargar mas peliculas al llegar al fondo
@@ -54,10 +49,37 @@ class MainActivity : AppCompatActivity(), PeliculasApi.PeliculasCallback {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
                     if(!limite)
-                        obtenerUltimasPeliculas(++pagina)
+                        obtenerPeliculas(++pagina)
                 }
             }
         })
+
+        val buttonPopular: Button = findViewById(R.id.mainPopular)
+        buttonPopular.setOnClickListener()
+        {
+            cambiarBusqueda(1)
+        }
+
+        val buttonCartelera: Button = findViewById(R.id.mainCartelera)
+        buttonCartelera.setOnClickListener()
+        {
+            cambiarBusqueda(2)
+        }
+
+    }
+
+    fun cambiarBusqueda(tipoBusquedaNuevo:Int)
+    {
+        if(tipoBusqueda != tipoBusquedaNuevo)
+        {
+            val tamanioLista = listaPeliculas.size;
+            pagina = 0
+            tipoBusqueda = tipoBusquedaNuevo
+            listaPeliculas.clear()
+            mViewEmpleados.notifyItemRangeRemoved(0,tamanioLista)
+            obtenerPeliculas(++pagina)
+        }
+
     }
 
     fun inicializarVariables()
@@ -68,30 +90,40 @@ class MainActivity : AppCompatActivity(), PeliculasApi.PeliculasCallback {
 
         peliculasApi = PeliculasApi()
         peliculasApi.context = this
-        crearRecyclerView()
+        context = this
+        asignarControles()
     }
 
-    fun obtenerUltimasPeliculas(pagina:Int)
+    fun obtenerPeliculas(pagina:Int)
     {
         progressDialog.show()
-        peliculasApi.obtenerUltimasPeliculas(pagina)
+
+        try{ peliculasApi.obtenerUltimasPeliculas(pagina,tipoBusqueda) }
+        catch (ex:Exception)
+        {
+            progressDialog.dismiss()
+            Toast.makeText(context, context.getString(R.string.mensaje_error_internet), Toast.LENGTH_LONG).show()
+        }
+
     }
 
 
     override fun onSuccessResponse(result: PeliculasResponse)
     {
+        var elementosActuales =  listaPeliculas.size
         if(pagina >= result.total_pages) limite = true;
-        runOnUiThread {
-            listaTmp.addAll(result.results.toMutableList())
-            mViewEmpleados.RecyclerAdapter(listaTmp, this)
-            mViewEmpleados.notifyDataSetChanged()
-        }
+
+        listaPeliculas.addAll(result.results.toMutableList())
+        mViewEmpleados.RecyclerAdapter(listaPeliculas, this)
+        mViewEmpleados.notifyItemRangeInserted(elementosActuales,listaPeliculas.size)
+
         progressDialog.dismiss()
     }
 
     override fun onFailureResponse()
     {
-        runOnUiThread{ Toast.makeText(context, context.getString(R.string.mensaje_error), Toast.LENGTH_LONG).show() }
+        Toast.makeText(context, context.getString(R.string.mensaje_error_generico), Toast.LENGTH_LONG).show()
         progressDialog.dismiss()
+        pagina--
     }
 }

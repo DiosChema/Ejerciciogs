@@ -4,7 +4,6 @@ import android.content.Context
 import com.example.ejercicio.Objects.Urls
 import com.example.ejercicio.Responses.PeliculasResponse
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializationContext
 import okhttp3.*
 import java.io.IOException
 
@@ -12,12 +11,19 @@ class PeliculasApi {
 
     lateinit var context: Context
 
-    fun obtenerUltimasPeliculas(pagina:Int){
+    fun obtenerUltimasPeliculas(pagina:Int, tipoPelicula:Int){
 
-        var peliculasInterface = context as PeliculasCallback
-
+        val peliculasInterface = context as PeliculasCallback
         val urls = Urls()
-        val url = urls.url+urls.lastMovies+urls.api+urls.pagina+pagina
+
+        val tipoPeliculaApi = when(tipoPelicula)
+        {
+            1 -> urls.popular
+            2 -> urls.nowPlaying
+            else -> ""
+        }
+
+        val url = urls.url+tipoPeliculaApi+urls.api+urls.pagina+pagina
         val request = Request.Builder()
             .url(url)
             .get()
